@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hackmatch-deployment
+  labels:
+    app: hackmatch
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hackmatch
+  template:
+    metadata:
+      labels:
+        app: hackmatch
+    spec:
+      containers:
+      - name: hackmatch
+        image: hackmatch-app:latest
+        imagePullPolicy: Never # Use local Minikube/Docker image cache
+        ports:
+        - containerPort: 3000
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
