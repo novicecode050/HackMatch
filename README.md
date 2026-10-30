@@ -34,7 +34,6 @@ Ensure you have the following installed on your machine:
 
 ### Option : Running inside Kubernetes / Minikube (Full Pipeline Setup)
 
-#### 
 1. Start Minikube & Docker Daemon
 Open your terminal and verify Minikube is up and running:
 ```bash
