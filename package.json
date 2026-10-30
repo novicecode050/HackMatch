@@ -1,0 +1,19 @@
+{
+  "name": "hackmatch",
+  "version": "1.0.0",
+  "description": "Hackathon Teammate Compatibility Engine API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "jest --detectOpenHandles --forceExit"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.4"
+  },
+  "author": "Mahamkali Lakshmi Tanooja",
+  "license": "MIT"
+}
