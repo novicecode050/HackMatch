@@ -1,153 +1,382 @@
-HackMatch - DevOps Lab Project
+# 🚀 HackMatch – DevOps Lab Project
 
-HackMatch is an automated teammate-matching and hackathon compatibility engine built with Node.js, Express, Jest, Docker, Kubernetes, and Jenkins. This repository documents the complete CI/CD lifecycle, containerization, and orchestration process.
+**HackMatch** is an automated teammate-matching and hackathon compatibility engine built using Node.js, Express, Jest, Docker, Kubernetes, and Jenkins.
 
-🚀 Project Architecture & Tech Stack
+This repository documents the complete CI/CD lifecycle, application testing, containerization, and orchestration process.
 
-Backend: Node.js & Express REST API
+---
 
-Testing: Jest & Supertest
+## 🏗️ Project Architecture & Tech Stack
 
-CI/CD Automation: Jenkins Pipeline
+| Component | Technology |
+|---|---|
+| Backend | Node.js & Express |
+| Testing | Jest & Supertest |
+| CI/CD Automation | Jenkins Pipeline |
+| Containerization | Docker |
+| Orchestration | Kubernetes |
+| Local Kubernetes Cluster | Minikube |
+| Kubernetes Service | ClusterIP |
 
-Containerization: Docker
+---
 
-Orchestration: Kubernetes (Minikube ClusterIP Service)
+## 🛠️ Step-by-Step Implementation & Workflow
 
-🛠️ Step-by-Step Implementation & Workflow
+### 1. Application Setup
+- Developed the core REST API endpoints:
+  - `/health` – Application health check.
+  - `/api/hackers` – Hacker-related API.
+  - `/api/teams/form` – Team formation API.
+- Implemented automated unit testing using Jest and Supertest.
 
-Application Setup: Developed core REST API endpoints (/health, /api/hackers, /api/teams/form) with automated unit tests using Jest.
+### 2. CI/CD Pipeline Setup
+- Configured a `Jenkinsfile` to automate the development and deployment workflow.
+- Implemented pipeline stages to:
+  - Check out source code from the repository.
+  - Install dependencies.
+  - Execute automated test suites.
+  - Build Docker images.
+  - Tag Docker image artifacts.
 
-CI/CD Pipeline Setup: Configured a Jenkinsfile to automatically check out code, run test suites, build Docker images, and tag artifacts.
+### 3. Containerization
+- Created a multi-stage `Dockerfile` to containerize the Node.js application.
+- Configured the application to run inside an isolated Docker container.
 
-Containerization: Authored a multi-stage Dockerfile to containerize the Node.js runtime environment.
+### 4. Kubernetes Orchestration
+- Created Kubernetes configuration files:
+  - `deployment.yaml` – Defines the application deployment and pods.
+  - `service.yaml` – Exposes the application internally using a ClusterIP service.
+- Deployed and managed application pods inside a local Minikube cluster.
 
-Orchestration: Created Kubernetes Deployment and ClusterIP Service manifests (deployment.yaml and service.yaml) to run the application pods inside Minikube.
+---
 
-💻 Detailed Guide: How to Run and Access the Application
+## 💻 Detailed Guide: How to Run and Access the Application
 
-📋 Prerequisites
+## 📋 Prerequisites
 
-Ensure you have the following installed on your machine:
+Ensure that the following tools are installed on your machine:
 
-Docker (daemon running)
+- [Docker](https://www.docker.com/) (Docker daemon running)
+- [Minikube](https://minikube.sigs.k8s.io/docs/start/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/)
+- [Node.js](https://nodejs.org/) (Optional, for local development)
+- npm (Optional, for local development)
 
-Minikube & kubectl
+---
 
-Node.js & npm (optional, for local non-containerized testing)
+## ☸️ Option A: Running Inside Kubernetes / Minikube
 
-Option A: Running inside Kubernetes / Minikube (Full Pipeline Setup)
+This option demonstrates the complete container orchestration workflow.
 
-1. Start Minikube & Docker Daemon
+### Step 1: Start Minikube and Docker Daemon
 
-Open your terminal and verify Minikube is up and running:
+Open your terminal and verify whether Minikube is running:
 
+```bash
 minikube status
+```
 
+If Minikube is stopped, start it using:
 
-If Minikube is stopped, start it with:
-
+```bash
 minikube start
+```
 
+### Step 2: Apply Kubernetes Manifests
 
-2. Apply Kubernetes Manifests
+Apply the Deployment and ClusterIP Service configurations:
 
-Apply the Deployment and ClusterIP Service configurations to your cluster:
-
+```bash
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
+```
 
+### Step 3: Load the Docker Image into Minikube
 
-3. Load the Docker Image into Minikube
+Minikube uses its own container runtime environment. Therefore, the locally built Docker image must be loaded into Minikube.
 
-Because Minikube uses its own isolated container runtime environment, sync your locally built Docker image into Minikube:
-
+```bash
 minikube image load hackmatch-app:latest
+```
 
+### Step 4: Restart Deployment and Verify Pods
 
-4. Restart Deployment & Verify Pods
+Trigger a rollout restart so that the deployment picks up the loaded image:
 
-Trigger a rollout restart so the cluster picks up the loaded image, then verify that all pods reach the 1/1 Running state:
-
+```bash
 kubectl rollout restart deployment hackmatch-deployment
+```
+
+Verify the status of the application pods:
+
+```bash
 kubectl get pods
+```
 
+**Expected Result:** The application pod should reach the `1/1 Running` state.
 
-(You should see hackmatch-deployment-XXXXX in Running status).
+Example:
 
-5. Open the Port-Forwarding Tunnel
+```text
+NAME                                  READY   STATUS    RESTARTS
+hackmatch-deployment-XXXXX            1/1     Running   0
+```
 
-Since hackmatch-service is a ClusterIP service mapping service port 80 to targetPort 3000, run this port-forward command:
+### Step 5: Open the Port-Forwarding Tunnel
 
+The Kubernetes ClusterIP Service is configured with:
+
+- Service Port: `80`
+- Target Port: `3000`
+
+Execute the following command:
+
+```bash
 kubectl port-forward svc/hackmatch-service 3000:80
+```
 
+**Important:** Keep this terminal window open. Closing the terminal stops the port-forwarding tunnel.
 
-⚠️ Note: Keep this terminal tab open! Closing this terminal window stops the local port-forwarding tunnel.
+### Step 6: Access Application Endpoints
 
-6. Access Application Endpoints
+Open a browser and navigate to:
 
-Open a browser or use curl in a separate terminal tab:
+**Health Check Endpoint:**
 
-Health Check Endpoint: http://localhost:3000/health
+```text
+http://localhost:3000/health
+```
 
-API Route Test:
+Alternatively, use curl from another terminal:
 
+```bash
 curl http://localhost:3000/health
+```
 
+The application should return a valid JSON health-check response.
 
-Option B: Quick Standalone Docker Execution
+---
 
-If you want to run the standalone Docker container directly without Kubernetes:
+## 🐳 Option B: Quick Standalone Docker Execution
 
-# Build the Docker image
+The application can also be executed directly using Docker without Kubernetes.
+
+### Step 1: Build the Docker Image
+
+```bash
 docker build -t hackmatch-app:latest .
+```
 
-# Run the container locally on port 3000
+### Step 2: Run the Docker Container
+
+```bash
 docker run -d -p 3000:3000 hackmatch-app:latest
+```
 
+### Step 3: Access the Application
 
-Access at: http://localhost:3000/health
+Open the following URL:
 
-Option C: Local Node.js Development Mode
+```text
+http://localhost:3000/health
+```
 
-If you want to test the code locally without any containers:
+The application will be accessible through port `3000`.
 
+---
+
+## 🟢 Option C: Local Node.js Development Mode
+
+To run the application locally without Docker or Kubernetes, follow these steps.
+
+### Step 1: Install Dependencies
+
+```bash
 npm install
-npm test          # Runs automated Jest & Supertest test suites
-npm start         # Starts Express server on http://localhost:3000
+```
 
+### Step 2: Run Automated Tests
 
-🐛 Troubleshooting & Error Resolutions
+```bash
+npm test
+```
 
-During the deployment process, several key infrastructure hurdles were encountered and resolved:
+This executes the automated Jest and Supertest test suites.
 
-1. Jenkins Docker & Node/npm CLI Errors
+### Step 3: Start the Application
 
-Issue: The Jenkins container lacked the necessary Docker CLI tools and Node/npm binaries to execute build commands inside pipeline stages.
+```bash
+npm start
+```
 
-Fix: Installed Docker CLI utilities and configured the container environment to mount the host Docker socket (/var/run/docker.sock), allowing Jenkins to build container images directly.
+The Express server will start at:
 
-2. Kubernetes ErrImageNeverPull Pod Status
+```text
+http://localhost:3000
+```
 
-Issue: Pods remained in a Pending state with an ErrImageNeverPull error because Kubernetes looked for the hackmatch-app:latest image inside Minikube's isolated cluster node rather than the host machine's Docker daemon.
+Access the health-check endpoint:
 
-Fix: Explicitly loaded the local image into Minikube and restarted the deployment rollout:
+```text
+http://localhost:3000/health
+```
 
+---
+
+## 🐛 Troubleshooting & Error Resolutions
+
+During the deployment process, several infrastructure-related issues were encountered and resolved.
+
+### 1. Jenkins Docker and Node/npm CLI Errors
+
+**Issue:**
+
+The Jenkins container did not have the necessary Docker CLI utilities and Node/npm binaries to execute the pipeline commands.
+
+**Resolution:**
+
+- Installed the required Docker CLI utilities.
+- Configured the Jenkins container to mount the host Docker socket:
+
+```text
+/var/run/docker.sock
+```
+
+- This allowed Jenkins to communicate with the host Docker daemon and build container images directly.
+
+### 2. Kubernetes ErrImageNeverPull Pod Status
+
+**Issue:**
+
+The application pods remained in a Pending state with an `ErrImageNeverPull` error.
+
+This happened because Kubernetes attempted to locate the `hackmatch-app:latest` image inside the Minikube cluster rather than the host machine's Docker environment.
+
+**Resolution:**
+
+Explicitly loaded the Docker image into Minikube:
+
+```bash
 minikube image load hackmatch-app:latest
+```
+
+Restarted the deployment:
+
+```bash
 kubectl rollout restart deployment hackmatch-deployment
+```
 
+This allowed Kubernetes to access the required image.
 
-3. Service Port Mapping Mismatch (3000:3000 vs 3000:80)
+### 3. Service Port Mapping Mismatch (3000:3000 vs 3000:80)
 
-Issue: Attempting to run kubectl port-forward svc/hackmatch-service 3000:3000 failed with Service hackmatch-service does not have a service port 3000 because the Kubernetes Service (hackmatch-service) was configured with port: 80 targeting targetPort: 3000.
+**Issue:**
 
-Fix: Inspected the service spec (kubectl get svc hackmatch-service -o yaml) and corrected the command to point to service port 80:
+Initially, the following command was executed:
 
+```bash
+kubectl port-forward svc/hackmatch-service 3000:3000
+```
+
+However, it returned the following error:
+
+```text
+Service hackmatch-service does not have a service port 3000
+```
+
+**Reason:**
+
+The Kubernetes Service was configured with:
+
+```yaml
+port: 80
+targetPort: 3000
+```
+
+Therefore, the service exposed port `80`, not port `3000`.
+
+**Resolution:**
+
+Inspected the service configuration:
+
+```bash
+kubectl get svc hackmatch-service -o yaml
+```
+
+Corrected the port-forwarding command:
+
+```bash
 kubectl port-forward svc/hackmatch-service 3000:80
+```
 
+This successfully forwarded local port `3000` to the Kubernetes Service port `80`.
 
-4. Cannot GET / in Browser
+### 4. Cannot GET / Error in Browser
 
-Issue: Navigating to http://localhost:3000 displayed Cannot GET /.
+**Issue:**
 
-Fix: Confirmed that connection tunneling was successful and that Express returned Cannot GET / simply because no root (/) route had been defined. Accessing GET-enabled API routes like http://localhost:3000/health returned valid JSON application data.
+When navigating to:
+
+```text
+http://localhost:3000
+```
+
+The browser displayed:
+
+```text
+Cannot GET /
+```
+
+**Reason:**
+
+The Express application did not have a route handler defined for the root endpoint `/`.
+
+This did not indicate a Docker, Kubernetes, or port-forwarding failure.
+
+**Resolution:**
+
+Verified the application using an existing GET endpoint:
+
+```text
+http://localhost:3000/health
+```
+
+The health-check endpoint returned valid JSON application data, confirming that the application was running successfully.
+
+---
+
+## 📌 Important Kubernetes Commands
+
+| Command | Purpose |
+|---|---|
+| `minikube start` | Starts the Minikube cluster |
+| `minikube status` | Checks Minikube status |
+| `kubectl apply -f k8s/deployment.yaml` | Creates or updates the deployment |
+| `kubectl apply -f k8s/service.yaml` | Creates or updates the service |
+| `minikube image load hackmatch-app:latest` | Loads the Docker image into Minikube |
+| `kubectl get pods` | Lists application pods |
+| `kubectl get services` | Lists Kubernetes services |
+| `kubectl get deployments` | Lists deployments |
+| `kubectl rollout restart deployment hackmatch-deployment` | Restarts the deployment |
+| `kubectl port-forward svc/hackmatch-service 3000:80` | Forwards local traffic to the service |
+
+---
+
+## 🎯 Project Outcome
+
+Successfully implemented **HackMatch**, demonstrating the integration of modern DevOps tools throughout the software development lifecycle.
+
+The project covers:
+
+- REST API development using Node.js and Express.
+- Automated testing using Jest and Supertest.
+- CI/CD pipeline automation using Jenkins.
+- Application containerization using Docker.
+- Container image management and deployment.
+- Kubernetes deployment and service configuration.
+- Application orchestration using Minikube.
+- Troubleshooting and resolving real-world deployment issues.
+
+**HackMatch demonstrates an end-to-end DevOps workflow, from application development and automated testing to containerization, continuous integration, and Kubernetes-based deployment.**
+
+---
